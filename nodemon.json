@@ -1,0 +1,10 @@
+{
+    "watch": [
+        "index.js",
+        "controllers/",
+        "models/",
+        "routes/",
+        "config/"
+    ],
+    "ext": "js, json, mjs, env"
+}

@@ -4,4 +4,7 @@
 # Node modules
 node_modules/
 
-
+# Database migration files
+add_updated_at.js
+alter_rename_password.js
+check_columns.js
