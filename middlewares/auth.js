@@ -42,3 +42,13 @@ export const requireRole = (...allowedRoles) => {
         next();
     };
 };
+
+export const onlyUser = (req, res, next) => {
+    if (req.user.role !== "user") {
+        return res.status(403).json({
+            message: "Only job seekers can apply"
+        });
+    }
+    next();
+};
+

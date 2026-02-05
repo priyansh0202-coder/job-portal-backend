@@ -32,5 +32,9 @@ app.use("/api/auth", userRoutes);
 // Use admin routes
 app.use("/api/admin", adminRoutes);
 
+// Use user routes
+app.use("/api/user", userRoutes);
+
+
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
