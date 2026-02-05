@@ -1,5 +1,5 @@
 // controllers/userController.js
-import { createApplication, getApplication } from "../models/applicationModel.js";
+import { createApplication, getApplication, getApplicationsByUser } from "../models/applicationModel.js";
 
 export const applyJob = async (req, res) => {
     try {
@@ -61,5 +61,20 @@ export const getApplyStatus = async (req, res) => {
     } catch (err) {
         console.error("getApplyStatus error:", err);
         return res.status(500).json({ applied: false });
+    }
+};
+
+export const getUserApplications = async (req, res) => {
+    try {
+        const userId = req.user.sub || req.user.id;
+        const applications = await getApplicationsByUser(userId);
+
+        return res.json({
+            count: applications.length,
+            applications: applications
+        });
+    } catch (err) {
+        console.error("getUserApplications error:", err);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 };

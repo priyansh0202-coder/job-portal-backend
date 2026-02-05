@@ -1,7 +1,7 @@
 // routes/user.routes.js
 import express from "express";
 import { registerUser, loginUser, logoutUser } from "../controllers/authControllers.js";
-import { applyJob, getApplyStatus } from "../controllers/userController.js";
+import { applyJob, getApplyStatus, getUserApplications } from "../controllers/userController.js";
 import { verifyToken, onlyUser } from "../middlewares/auth.js";
 import { uploadResume, handleMulterError } from "../middlewares/uploadResume.js";
 
@@ -19,5 +19,8 @@ router.post("/logout", logoutUser);
 router.post("/apply/:jobId", verifyToken, onlyUser, uploadResume, handleMulterError, applyJob);
 
 router.get("/apply/:jobId/status", verifyToken, onlyUser, getApplyStatus);
+
+// Get list of jobs the user has applied to
+router.get("/my-applications", verifyToken, onlyUser, getUserApplications);
 
 export default router;
