@@ -17,8 +17,18 @@ export const applyJob = async (req, res) => {
             return res.status(400).json({ message: "Already applied" });
         }
 
-        // 2. Apply
-        const application = await createApplication(jobId, userId);
+        // 2. Get resume URL from uploaded file (if any)
+        let resumeUrl = null;
+        if (req.file) {
+            // Store the relative path to access the file
+            resumeUrl = `/uploads/resumes/${req.file.filename}`;
+        }
+
+        // 3. Get cover letter from request body
+        const coverLetter = req.body.coverLetter || null;
+
+        // 4. Apply with resume and cover letter
+        const application = await createApplication(jobId, userId, resumeUrl, coverLetter);
 
         return res.status(201).json({
             message: "Applied successfully",

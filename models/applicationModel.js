@@ -1,13 +1,13 @@
 // models/applicationModel.js
 import { pool } from "../config/db.js";
 
-export const createApplication = async (jobId, userId) => {
+export const createApplication = async (jobId, userId, resumeUrl = null, coverLetter = null) => {
     const query = `
-        INSERT INTO job_applications (job_id, user_id)
-        VALUES ($1, $2)
+        INSERT INTO job_applications (job_id, user_id, resume_url, cover_letter)
+        VALUES ($1, $2, $3, $4)
         RETURNING *
     `;
-    const { rows } = await pool.query(query, [jobId, userId]);
+    const { rows } = await pool.query(query, [jobId, userId, resumeUrl, coverLetter]);
     return rows[0];
 };
 
