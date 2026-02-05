@@ -1,5 +1,5 @@
 // controllers/adminController.js
-import { createJob, getJobs, getJobById, getAdminDashboard } from "../models/jobModel.js";
+import { createJob, getJobs, getJobById, getAdminDashboard, updateJob, deleteJob } from "../models/jobModel.js";
 
 
 /**

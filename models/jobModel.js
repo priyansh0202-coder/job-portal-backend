@@ -135,50 +135,50 @@ export const getJobById = async (id) => {
  * @param {number} id
  * @param {Object} fields - fields to update
  */
-// export const updateJob = async (id, fields = {}) => {
-//     // Build dynamic SET clause
-//     const keys = Object.keys(fields);
-//     if (keys.length === 0) return getJobById(id);
+export const updateJob = async (id, fields = {}) => {
+    // Build dynamic SET clause
+    const keys = Object.keys(fields);
+    if (keys.length === 0) return getJobById(id);
 
-//     const sets = keys.map((k, idx) => `"${k}" = $${idx + 1}`);
-//     const values = keys.map((k) => {
-//         // If updating visibility, ensure it's JSON string
-//         if (k === "visibility" && typeof fields[k] !== "string") {
-//             return JSON.stringify(fields[k] || {});
-//         }
-//         return fields[k];
-//     });
+    const sets = keys.map((k, idx) => `"${k}" = $${idx + 1}`);
+    const values = keys.map((k) => {
+        // If updating visibility, ensure it's JSON string
+        if (k === "visibility" && typeof fields[k] !== "string") {
+            return JSON.stringify(fields[k] || {});
+        }
+        return fields[k];
+    });
 
-//     // push updated_at
-//     values.push(new Date());
-//     const updatedAtIndex = values.length;
+    // push updated_at
+    values.push(new Date());
+    const updatedAtIndex = values.length;
 
-//     const q = `
-//     UPDATE jobs
-//     SET ${sets.join(", ")}, updated_at = $${updatedAtIndex}
-//     WHERE id = $${updatedAtIndex + 1}
-//     RETURNING *;
-//   `;
+    const q = `
+    UPDATE jobs
+    SET ${sets.join(", ")}, updated_at = $${updatedAtIndex}
+    WHERE id = $${updatedAtIndex + 1}
+    RETURNING *;
+  `;
 
-//     values.push(id);
-//     const { rows } = await pool.query(q, values);
-//     return rows[0] || null;
-// };
+    values.push(id);
+    const { rows } = await pool.query(q, values);
+    return rows[0] || null;
+};
 
 /**
  * Soft delete (mark status closed) or hard delete
  * @param {number} id
  * @param {Object} opts - { hard: boolean }
  */
-// export const deleteJob = async (id, opts = { hard: false }) => {
-//     if (opts.hard) {
-//         const { rows } = await pool.query(`DELETE FROM jobs WHERE id = $1 RETURNING *;`, [id]);
-//         return rows[0] || null;
-//     } else {
-//         const { rows } = await pool.query(`UPDATE jobs SET status = 'closed', updated_at = now() WHERE id = $1 RETURNING *;`, [id]);
-//         return rows[0] || null;
-//     }
-// };
+export const deleteJob = async (id, opts = { hard: false }) => {
+    if (opts.hard) {
+        const { rows } = await pool.query(`DELETE FROM jobs WHERE id = $1 RETURNING *;`, [id]);
+        return rows[0] || null;
+    } else {
+        const { rows } = await pool.query(`UPDATE jobs SET status = 'closed', updated_at = now() WHERE id = $1 RETURNING *;`, [id]);
+        return rows[0] || null;
+    }
+};
 
 /**
  * Recent jobs (limit)
