@@ -15,7 +15,7 @@ const signToken = (user) => jwt.sign({ sub: user.id, role: user.role }, JWT_SECR
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "lax", // use "none" + secure=true for cross-domain prod
+  sameSite: "none", // use "none" + secure=true for cross-domain prod
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
