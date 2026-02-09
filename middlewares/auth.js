@@ -24,7 +24,11 @@ export const verifyToken = (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = decoded; // { sub, role }
+        // req.user = decoded; // { sub, role }
+        req.user = {
+            id: decoded.sub,
+            role: decoded.role,
+        };
         next();
     } catch (err) {
         console.error("verifyToken error:", err.message);
