@@ -2,13 +2,15 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { getUserByEmail, createUser, getUserById } from "../models/userModel.js";
+import { OAuth2Client } from "google-auth-library";
+import { getUserByEmail, createUser, getUserById, getUserByGoogleId, createGoogleUser, linkGoogleId } from "../models/userModel.js";
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || "10", 10);
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const signToken = (user) => jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
@@ -74,6 +76,57 @@ export const loginUser = async (req, res) => {
 export const logoutUser = (req, res) => {
   res.clearCookie("token", cookieOptions);
   return res.json({ message: "Logged out successfully" });
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body || {};
+    if (!idToken) return res.status(400).json({ error: "idToken is required" });
+
+    // Verify the Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) return res.status(400).json({ error: "Google account has no email" });
+
+    let user;
+
+    // 1. Check if user already exists by Google ID → direct login
+    user = await getUserByGoogleId(googleId);
+    if (user) {
+      const token = signToken(user);
+      res.cookie("token", token, cookieOptions);
+      const { password: _p, ...safeUser } = user;
+      return res.json({ user: safeUser, token });
+    }
+
+    // 2. Check if user exists by email → link Google ID to existing account
+    user = await getUserByEmail(email);
+    if (user) {
+      user = await linkGoogleId(user.id, googleId, picture);
+      const token = signToken(user);
+      res.cookie("token", token, cookieOptions);
+      const { password: _p, ...safeUser } = user;
+      return res.json({ user: safeUser, token });
+    }
+
+    // 3. New user → create account with Google info (no password)
+    user = await createGoogleUser(name, email, googleId, picture);
+    const token = signToken(user);
+    res.cookie("token", token, cookieOptions);
+    return res.status(201).json({ user, token });
+  } catch (err) {
+    console.error("googleLogin error:", err);
+    if (err.message?.includes("Token used too late") || err.message?.includes("Invalid token")) {
+      return res.status(401).json({ error: "Invalid or expired Google token" });
+    }
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 // export const me = async (req, res) => {
