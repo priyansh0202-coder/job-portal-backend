@@ -128,14 +128,3 @@ export const googleLogin = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-// export const me = async (req, res) => {
-//   try {
-//     const user = await getUserById(req.user.sub || req.user.id);
-//     if (!user) return res.status(404).json({ error: "User not found" });
-//     return res.json({ user });
-//   } catch (err) {
-//     console.error("me error:", err);
-//     return res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
