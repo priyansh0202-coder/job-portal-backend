@@ -9,12 +9,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import userRoutes from "./routes/user.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import "./config/db.js"; 
 
-
-// important: import db.js so the connection runs
-import "./config/db.js"; // optional if you need to query here
-
-// Get __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -37,7 +33,6 @@ app.use(cors({
   credentials: true
 }));
 
-// Serve static files (uploaded resumes)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;
