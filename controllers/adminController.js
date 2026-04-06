@@ -1,5 +1,6 @@
 // controllers/adminController.js
 import { createJob, getJobs, getJobById, getAdminDashboard, updateJob, deleteJob } from "../models/jobModel.js";
+import { getApplications, getApplicationsByJob, getApplicationById } from "../models/applicationModel.js";
 
 
 /**
@@ -19,7 +20,7 @@ export const dashboard = async (req, res) => {
 
 /**
  * GET /api/admin/jobs
- * Protected: admin only (you may expose a public /api/jobs separately)
+ * Protected: admin only 
  */
 export const listJobs = async (req, res) => {
     try {
@@ -165,6 +166,64 @@ export const deleteJobHandler = async (req, res) => {
         return res.json({ job: deleted });
     } catch (err) {
         console.error("adminController.deleteJobHandler:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
+/**
+ * GET /api/admin/applications
+ * Protected: admin only
+ */
+export const listApplications = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit || "20", 10);
+        const offset = parseInt(req.query.offset || "0", 10);
+        const status = req.query.status;
+        const search = req.query.search;
+        const user_id = req.query.user_id ? parseInt(req.query.user_id, 10) : undefined;
+        const job_id = req.query.job_id ? parseInt(req.query.job_id, 10) : undefined;
+
+        const rows = await getApplications(limit, offset, { status, user_id, job_id, search });
+        return res.json({ applications: rows });
+    } catch (err) {
+        console.error("adminController.listApplications:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+/**
+ * GET /api/admin/jobs/:id/applications
+ * Protected: admin only
+ */
+export const listApplicationsByJob = async (req, res) => {
+    try {
+        const jobId = parseInt(req.params.id, 10);
+        if (!jobId) return res.status(400).json({ error: "Invalid job id" });
+
+        const applications = await getApplicationsByJob(jobId);
+        return res.json({ applications });
+    } catch (err) {
+        console.error("adminController.listApplicationsByJob:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+/**
+ * GET /api/admin/applications/:id
+ * Protected: admin only
+ */
+export const getApplicationDetail = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ error: "Invalid application id" });
+
+        const application = await getApplicationById(id);
+        if (!application) return res.status(404).json({ error: "Application not found" });
+        return res.json({ application });
+    } catch (err) {
+        console.error("adminController.getApplicationDetail:", err);
         return res.status(500).json({ error: "Internal server error" });
     }
 };

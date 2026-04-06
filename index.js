@@ -39,7 +39,7 @@ const PORT = process.env.PORT || 4000;
 
 app.get("/", (req, res) => res.send("Hello World!"));
 
-// Use user routes
+// Use user auth routes
 app.use("/api/auth", userRoutes);                                                                                    
 
 // Use admin routes
