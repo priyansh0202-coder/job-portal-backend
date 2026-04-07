@@ -1,6 +1,6 @@
 // controllers/adminController.js
-import { createJob, getJobs, getJobById, getAdminDashboard, updateJob, deleteJob } from "../models/jobModel.js";
-import { getApplications, getApplicationsByJob, getApplicationById } from "../models/applicationModel.js";
+import { createJob, getJobs, getJobById, getAdminDashboard, updateJob, deleteJob, getCompanies } from "../models/jobModel.js";
+import { getApplications, getApplicationsByJob, getApplicationById, updateApplicationStatus } from "../models/applicationModel.js";
 
 
 /**
@@ -37,6 +37,25 @@ export const listJobs = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
+
+/**
+ * GET /api/admin/companies
+ * Public/Admin: list distinct companies
+ */
+export const listCompanies = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit || "20", 10);
+        const offset = parseInt(req.query.offset || "0", 10);
+        const search = req.query.search;
+
+        const rows = await getCompanies({ search, limit, offset });
+        return res.json({ companies: rows });
+    } catch (err) {
+        console.error("adminController.listCompanies:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 export const createJobHandler = async (req, res) => {
     try {
         // Basic server-side validation (title required)
@@ -224,6 +243,38 @@ export const getApplicationDetail = async (req, res) => {
         return res.json({ application });
     } catch (err) {
         console.error("adminController.getApplicationDetail:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+/**
+ * PATCH /api/admin/applications/:id/status
+ * Protected: admin only
+ * Body: { status, admin_notes? }
+ */
+const ALLOWED_STATUSES = ["pending", "reviewed", "shortlisted", "rejected", "interview_scheduled", "hired"];
+
+export const updateApplicationStatusHandler = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ error: "Invalid application id" });
+
+        const { status, admin_notes, interview_date } = req.body;
+
+        if (!status || !ALLOWED_STATUSES.includes(status)) {
+            return res.status(400).json({
+                error: `Invalid status. Allowed values: ${ALLOWED_STATUSES.join(", ")}`
+            });
+        }
+
+        const parsedDate = interview_date ? new Date(interview_date) : null;
+
+        const updated = await updateApplicationStatus(id, status, admin_notes || null, parsedDate);
+        if (!updated) return res.status(404).json({ error: "Application not found" });
+
+        return res.json({ application: updated });
+    } catch (err) {
+        console.error("adminController.updateApplicationStatusHandler:", err);
         return res.status(500).json({ error: "Internal server error" });
     }
 };

@@ -1,7 +1,7 @@
 // routes/admin.routes.js
 
 import express from "express";
-import { createJobHandler, getJob, updateJobHandler, deleteJobHandler, listJobs, dashboard, listApplications, listApplicationsByJob, getApplicationDetail } from "../controllers/adminController.js";
+import { createJobHandler, getJob, updateJobHandler, deleteJobHandler, listJobs, dashboard, listApplications, listApplicationsByJob, getApplicationDetail, updateApplicationStatusHandler, listCompanies } from "../controllers/adminController.js";
 
 import { verifyToken, requireRole } from "../middlewares/auth.js";
 
@@ -19,6 +19,9 @@ router.get("/applications", verifyToken, requireRole("admin"), listApplications)
 // Get single application detail
 router.get("/applications/:id", verifyToken, requireRole("admin"), getApplicationDetail);
 
+// Update application status
+router.patch("/applications/:id/status", verifyToken, requireRole("admin"), updateApplicationStatusHandler);
+
 // Get applications for a specific job
 router.get("/jobs/:id/applications", verifyToken, requireRole("admin"), listApplicationsByJob);
 
@@ -27,6 +30,9 @@ router.get("/jobs/:id", verifyToken, requireRole("admin"), getJob);
 
 // Jobs listing for admin (with pagination / filters)
 router.get("/jobs", listJobs);
+
+// Companies listing
+router.get("/companies", listCompanies);
 
 // Update job
 router.put("/jobs/:id", verifyToken, requireRole("admin"), updateJobHandler);

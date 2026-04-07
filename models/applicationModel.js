@@ -195,3 +195,15 @@ export const getApplicationById = async (applicationId) => {
     const { rows } = await pool.query(query, [applicationId]);
     return rows[0];
 };
+
+export const updateApplicationStatus = async (applicationId, status, adminNotes = null, interviewDate = null) => {
+    const query = `
+        UPDATE job_applications 
+        SET status = $1, admin_notes = $2, interview_date = $3, updated_at = NOW()
+        WHERE id = $4
+        RETURNING *
+    `;
+    const { rows } = await pool.query(query, [status, adminNotes, interviewDate, applicationId]);
+    return rows[0];
+};
+

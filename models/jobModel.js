@@ -121,6 +121,35 @@ export const getJobs = async (limit = 20, offset = 0, opts = {}) => {
 };
 
 /**
+ * Get distinct list of companies with their active job counts
+ * @param {Object} opts - optional filters { search, limit, offset }
+ */
+export const getCompanies = async (opts = {}) => {
+    const { search, limit = 20, offset = 0 } = opts;
+
+    let q = `
+        SELECT company_name, COUNT(id)::INT AS job_count
+        FROM jobs
+        WHERE status = 'active' AND company_name IS NOT NULL AND company_name != ''
+    `;
+
+    const values = [];
+
+    if (search) {
+        values.push(`%${search}%`);
+        q += ` AND company_name ILIKE $1`;
+    }
+
+    q += ` GROUP BY company_name ORDER BY job_count DESC`;
+
+    values.push(limit, offset);
+    q += ` LIMIT $${values.length - 1} OFFSET $${values.length};`;
+
+    const { rows } = await pool.query(q, values);
+    return rows;
+};
+
+/**
  * Get a single job by id (full row)
  * @param {number} id
  */
